@@ -4,7 +4,7 @@ connection = pymysql.connect(host="localhost",db="finger",user="root",password="
 cursor = connection.cursor()
 
 def adduser(name):
-    cursor.execute("insert into user ('name','auth') values ('%s','1')",name)
+    cursor.execute("insert into user (`name`,`auth`) values (%s,'1')",name)
     id = connection.insert_id()
     connection.commit()
     return id

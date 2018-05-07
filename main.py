@@ -1,9 +1,8 @@
 import finger
 import web
 
-
-
 if __name__ == '__main__':
-    # web.fing.open("ttyS0")
+    web.fing.open("COM3")
+    # web.fing.getusernum()
 
-    web.app.run()
+    web.start()

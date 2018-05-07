@@ -1,52 +1,64 @@
+from gevent import monkey
+monkey.patch_all()
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 import finger
 import json
+from gevent import pywsgi
 import db
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = '123456'  
 fing = finger._Finger()
 
-curr_id = None
+def start():
+    fing.start()
+    server = pywsgi.WSGIServer(('127.0.0.1', 5000), app)
+    server.serve_forever()
 
 @app.route('/')
 def hello():
-    return render_template('index.html',running=fing.isrunning())
+    return render_template('index.html', running=fing.isrunning())
 
-@app.route('/add',methods=['GET'])
+@app.route('/start',methods=['GET'])
+def fingstart():
+    fing.start()
+    return redirect(url_for(''))
+
+@app.route('/add', methods=['GET'])
 def add():
     return render_template('add.html')
 
-@app.route('/add',methods=['POST'])
+
+@app.route('/add', methods=['POST'])
 def addfinger():
     name = request.form['name']
     num = request.form['num']
-    data = None
-    if(fing.isrunning()):
-        data = {
-            "status":False,
-            "error":"device is running"
-        }
-        return json.dumps(data)
-    if(int(num) == 1):
+    curr_id = None
+    if int(num) == 1:
         curr_id = db.adduser(name)
-    status = fing.addfinger(num,curr_id,1)
+        session['curr_id'] = curr_id
+    else:
+        curr_id = session['curr_id']
+    status = fing.addfinger(num, curr_id, 1)
     if status == finger.SUCCESS:
         data = {
-            "status":True
+            "status": True
         }
     else:
         data = {
-            "status":False,
-            "error":finger.ACK_ERROR[status]
+            "status": False,
+            "error": finger.ACK_ERROR[status]
         }
     return json.dumps(data)
 
-@app.route("/manager",methods=['GET'])
+
+@app.route("/manager", methods=['GET'])
 def manager():
     users = db.getusers()
-    return render_template("manager.html",users=users)
+    return render_template("manager.html", users=users)
 
-@app.route("/del/<id>",methods=['GET'])
+
+@app.route("/del/<id>", methods=['GET'])
 def delete(id):
     db.delteuser(id)
     return redirect(url_for('manager'))
