@@ -1,7 +1,8 @@
 import serial
 from gevent import select
 import gevent
-# import lock
+import lock
+import buzzer
 
 SUCCESS, FAIL, FULL, NOUSER, USER_OPD, FIN_OPD, TIMEOUT = (0, 1, 4, 5, 6, 7, 8)
 
@@ -34,16 +35,19 @@ class _Finger:
             id, auth = self.checkfinger()
             if auth > 3:
                 print("Finger error", ACK_ERROR[auth])
+                buzzer.ring()
                 continue
             print("id = ", id)
-            # lock.unlock()
+            lock.unlock()
 
     def isrunning(self):
         return self._running
 
     def start(self):
+        if self._running is True:
+            return
         self._running = True
-        gevent.joinall([gevent.spawn(self.loop)])
+        gevent.spawn(self.loop)
 
     def stop(self):
         self._running = False

@@ -1,15 +1,16 @@
 import RPi.GPIO as GPIO
-import threading
+import gevent
 
 GPIO.setmode(GPIO.BOARD)
 
 channel = 12
 
-GPIO.setup(channel, GPIO.OUT,initial=GPIO.HIGH)
-
-def unlock():
-    GPIO.output(channel,GPIO.LOW)
-    threading.Timer(3,lock)
+GPIO.setup(channel, GPIO.OUT,initial=GPIO.LOW)
 
 def lock():
+    GPIO.output(channel,GPIO.LOW)
+
+def unlock():
     GPIO.output(channel,GPIO.HIGH)
+    gevent.sleep(3)
+    lock()

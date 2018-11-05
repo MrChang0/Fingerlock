@@ -1,6 +1,6 @@
 import pymysql
 
-connection = pymysql.connect(host="localhost",db="finger",user="root",password="1")
+connection = pymysql.connect(host="localhost",db="finger",user="root",password="123456")
 cursor = connection.cursor()
 
 def adduser(name):
